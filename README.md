@@ -8,16 +8,31 @@ API para controle de finanças pessoais
 - Maven
 - H2 (in-memory) — mock local
 - Swagger UI (springdoc-openapi)
-
-## Pré-requisitos
-
-- JDK 21 instalado e `JAVA_HOME` configurado
-- Maven instalado
+- Docker
 
 ## Como executar
 
+### Local
+
+**Pré-requisitos:** JDK 21 e Maven instalados.
+
 ```bash
 mvn spring-boot:run
+```
+
+### Docker
+
+**Pré-requisito:** Docker instalado.
+
+```bash
+# buildar e subir
+docker-compose up --build
+
+# subir em background
+docker-compose up -d --build
+
+# derrubar
+docker-compose down
 ```
 
 A API estará disponível em `http://localhost:8080`.
