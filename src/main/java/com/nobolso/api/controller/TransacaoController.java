@@ -1,0 +1,126 @@
+package com.nobolso.api.controller;
+
+import com.nobolso.api.dto.request.TransacaoFilterDTO;
+import com.nobolso.api.dto.request.TransacaoInputDTO;
+import com.nobolso.api.dto.response.SaldoResponseDTO;
+import com.nobolso.api.dto.response.TransacaoResponseDTO;
+import com.nobolso.api.mapper.TransacaoMapper;
+import com.nobolso.api.service.TransacaoService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.net.URI;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/transacoes")
+@Tag(name = "Transações", description = "Gerenciamento de transações financeiras")
+public class TransacaoController {
+
+    private final TransacaoService transacaoService;
+    private final TransacaoMapper mapper;
+
+    public TransacaoController(TransacaoService transacaoService, TransacaoMapper mapper) {
+        this.transacaoService = transacaoService;
+        this.mapper = mapper;
+    }
+
+    @GetMapping
+    @Operation(summary = "Pesquisar transações", description = "Retorna a lista de transações com filtros opcionais.")
+    @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
+    public List<TransacaoResponseDTO> pesquisar(
+            @Parameter(description = "Tipo da transação (1=Pix, 2=Depósito, 3=Transferência, 4=Saque, 5=Outros)")
+            @RequestParam(required = false) Integer tipo,
+            @Parameter(description = "Direção (1=Entrada, 2=Saída)")
+            @RequestParam(required = false) Integer direcao,
+            @Parameter(description = "Categoria (1=Alimentação, 2=Lazer, 3=Assinatura, 4=Casa, 5=Educação, 6=Receitas Fixas, 7=Outros)")
+            @RequestParam(required = false) Integer categoria,
+            @Parameter(description = "Texto contido na descrição")
+            @RequestParam(required = false) String descricao,
+            @Parameter(description = "Data início do período (ISO 8601, ex: 2026-01-01T00:00:00)")
+            @RequestParam(required = false) LocalDateTime dataInicio,
+            @Parameter(description = "Data fim do período (ISO 8601, ex: 2026-12-31T23:59:59)")
+            @RequestParam(required = false) LocalDateTime dataFim) {
+
+        TransacaoFilterDTO filter = new TransacaoFilterDTO(tipo, direcao, categoria, descricao, dataInicio, dataFim);
+        return transacaoService.pesquisar(filter).stream().map(mapper::toResponse).toList();
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Buscar transação por ID")
+    @ApiResponse(responseCode = "200", description = "Transação encontrada")
+    @ApiResponse(responseCode = "404", description = "Transação não encontrada", content = @Content(schema = @Schema(hidden = true)))
+    public TransacaoResponseDTO buscarPorId(
+            @Parameter(description = "ID da transação", required = true)
+            @PathVariable Long id) {
+        return mapper.toResponse(transacaoService.buscarPorId(id));
+    }
+
+    @PostMapping
+    @Operation(summary = "Criar transação", description = "Cria uma nova transação financeira")
+    @ApiResponse(responseCode = "201", description = "Transação criada com sucesso")
+    @ApiResponse(responseCode = "400", description = "Dados inválidos", content = @Content(schema = @Schema(hidden = true)))
+    public ResponseEntity<TransacaoResponseDTO> adicionar(@Valid @RequestBody TransacaoInputDTO dto) {
+        TransacaoResponseDTO response = mapper.toResponse(transacaoService.adicionar(dto));
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(response.id())
+                .toUri();
+        return ResponseEntity.created(location).body(response);
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Atualizar transação", description = "Substitui os dados de uma transação existente")
+    @ApiResponse(responseCode = "200", description = "Transação atualizada com sucesso")
+    @ApiResponse(responseCode = "404", description = "Transação não encontrada", content = @Content(schema = @Schema(hidden = true)))
+    public TransacaoResponseDTO atualizar(
+            @Parameter(description = "ID da transação", required = true)
+            @PathVariable Long id,
+            @Valid @RequestBody TransacaoInputDTO dto) {
+        return mapper.toResponse(transacaoService.atualizar(id, dto));
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Deletar transação")
+    @ApiResponse(responseCode = "204", description = "Transação removida com sucesso")
+    @ApiResponse(responseCode = "404", description = "Transação não encontrada", content = @Content(schema = @Schema(hidden = true)))
+    public ResponseEntity<Void> deletar(
+            @Parameter(description = "ID da transação", required = true)
+            @PathVariable Long id) {
+        transacaoService.deletar(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/saldo")
+    @Operation(summary = "Consultar saldo", description = "Retorna o saldo calculado (entradas - saídas). Pode ser filtrado por período ou direção.")
+    @ApiResponse(responseCode = "200", description = "Saldo calculado com sucesso")
+    public SaldoResponseDTO buscarSaldo(
+            @Parameter(description = "Direção (1=Entrada, 2=Saída) — omitir para considerar ambas")
+            @RequestParam(required = false) Integer direcao,
+            @Parameter(description = "Data início do período")
+            @RequestParam(required = false) LocalDateTime dataInicio,
+            @Parameter(description = "Data fim do período")
+            @RequestParam(required = false) LocalDateTime dataFim) {
+
+        TransacaoFilterDTO filter = new TransacaoFilterDTO(null, direcao, null, null, dataInicio, dataFim);
+        return new SaldoResponseDTO(transacaoService.buscarSaldo(filter));
+    }
+
+    @GetMapping("/recentes")
+    @Operation(summary = "Últimas transações", description = "Retorna as N transações mais recentes ordenadas por data")
+    @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
+    public List<TransacaoResponseDTO> buscarRecentes(
+            @Parameter(description = "Quantidade de transações a retornar (padrão: 5)")
+            @RequestParam(defaultValue = "5") int limit) {
+        return transacaoService.buscarUltimasTransacoes(limit).stream().map(mapper::toResponse).toList();
+    }
+}
