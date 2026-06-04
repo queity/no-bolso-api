@@ -4,8 +4,8 @@ import com.nobolso.api.dto.request.TransacaoFilterDTO;
 import com.nobolso.api.dto.request.TransacaoInputDTO;
 import com.nobolso.api.exception.TransacaoNaoEncontradaException;
 import com.nobolso.api.model.Transacao;
-import com.nobolso.api.model.enums.DirecaoTransacao;
 import com.nobolso.api.repository.TransacaoRepository;
+import com.nobolso.api.util.SaldoCalculator;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -51,12 +51,7 @@ public class TransacaoService {
                 filters.dataInicio().isAfter(filters.dataFim())) {
             throw new IllegalArgumentException("Data de início não pode ser maior que a data fim");
         }
-        return repository.pesquisar(filters).stream()
-                .reduce(BigDecimal.ZERO, (acc, t) ->
-                        t.getDirecao() == DirecaoTransacao.ENTRADA
-                                ? acc.add(t.getValor())
-                                : acc.subtract(t.getValor()),
-                        BigDecimal::add);
+        return SaldoCalculator.calcular(repository.pesquisar(filters));
     }
 
     public List<Transacao> buscarUltimasTransacoes(int limit) {

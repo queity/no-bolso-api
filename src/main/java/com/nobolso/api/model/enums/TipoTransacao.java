@@ -3,7 +3,7 @@ package com.nobolso.api.model.enums;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public enum TipoTransacao {
+public enum TipoTransacao implements ICodigoEnum {
     PIX(1, "Pix"),
     DEPOSITO(2, "Depósito"),
     TRANSFERENCIA(3, "Transferência"),

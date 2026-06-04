@@ -1,5 +1,8 @@
 package com.nobolso.api.dto.request;
 
+import com.nobolso.api.model.enums.CategoriaTransacao;
+import com.nobolso.api.model.enums.DirecaoTransacao;
+import com.nobolso.api.model.enums.TipoTransacao;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -12,13 +15,13 @@ public record TransacaoInputDTO(
         @Schema(description = "Valor da transação", example = "150.00")
         @NotNull @Positive BigDecimal valor,
 
-        @Schema(description = "Tipo: 1=Pix, 2=Depósito, 3=Transferência, 4=Saque, 5=Outros", example = "1")
+        @Schema(description = "Tipo da transação", implementation = TipoTransacao.class, example = "1")
         @NotNull Integer tipo,
 
-        @Schema(description = "Direção: 1=Entrada, 2=Saída", example = "2")
+        @Schema(description = "Direção da transação", implementation = DirecaoTransacao.class, example = "2")
         @NotNull Integer direcao,
 
-        @Schema(description = "Categoria: 1=Alimentação, 2=Lazer, 3=Assinatura, 4=Casa, 5=Educação, 6=Receitas Fixas, 7=Outros", example = "1")
+        @Schema(description = "Categoria da transação", implementation = CategoriaTransacao.class, example = "1")
         Integer categoria,
 
         @Schema(description = "Descrição livre da transação", example = "Almoço no restaurante")

@@ -5,6 +5,9 @@ import com.nobolso.api.dto.request.TransacaoInputDTO;
 import com.nobolso.api.dto.response.SaldoResponseDTO;
 import com.nobolso.api.dto.response.TransacaoResponseDTO;
 import com.nobolso.api.mapper.TransacaoMapper;
+import com.nobolso.api.model.enums.CategoriaTransacao;
+import com.nobolso.api.model.enums.DirecaoTransacao;
+import com.nobolso.api.model.enums.TipoTransacao;
 import com.nobolso.api.service.TransacaoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -38,11 +41,11 @@ public class TransacaoController {
     @Operation(summary = "Pesquisar transações", description = "Retorna a lista de transações com filtros opcionais.")
     @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
     public List<TransacaoResponseDTO> pesquisar(
-            @Parameter(description = "Tipo da transação (1=Pix, 2=Depósito, 3=Transferência, 4=Saque, 5=Outros)")
+            @Parameter(description = "Tipo da transação", schema = @Schema(implementation = TipoTransacao.class))
             @RequestParam(required = false) Integer tipo,
-            @Parameter(description = "Direção (1=Entrada, 2=Saída)")
+            @Parameter(description = "Direção da transação", schema = @Schema(implementation = DirecaoTransacao.class))
             @RequestParam(required = false) Integer direcao,
-            @Parameter(description = "Categoria (1=Alimentação, 2=Lazer, 3=Assinatura, 4=Casa, 5=Educação, 6=Receitas Fixas, 7=Outros)")
+            @Parameter(description = "Categoria da transação", schema = @Schema(implementation = CategoriaTransacao.class))
             @RequestParam(required = false) Integer categoria,
             @Parameter(description = "Texto contido na descrição")
             @RequestParam(required = false) String descricao,
@@ -104,7 +107,7 @@ public class TransacaoController {
     @Operation(summary = "Consultar saldo", description = "Retorna o saldo calculado (entradas - saídas). Pode ser filtrado por período ou direção.")
     @ApiResponse(responseCode = "200", description = "Saldo calculado com sucesso")
     public SaldoResponseDTO buscarSaldo(
-            @Parameter(description = "Direção (1=Entrada, 2=Saída) — omitir para considerar ambas")
+            @Parameter(description = "Direção da transação", schema = @Schema(implementation = DirecaoTransacao.class))
             @RequestParam(required = false) Integer direcao,
             @Parameter(description = "Data início do período")
             @RequestParam(required = false) LocalDateTime dataInicio,
