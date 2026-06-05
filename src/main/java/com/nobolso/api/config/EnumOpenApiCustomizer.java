@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.models.OpenAPI;
 import org.springdoc.core.customizers.OpenApiCustomizer;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.lang.NonNull;
@@ -13,7 +14,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,23 +33,23 @@ public class EnumOpenApiCustomizer implements OpenApiCustomizer, ApplicationCont
 
         descricoesPorParam = new HashMap<>();
 
-        context.getBeansWithAnnotation(RestController.class).values().forEach(bean ->
-                Arrays.stream(bean.getClass().getDeclaredMethods()).forEach(method ->
-                        Arrays.stream(method.getParameters()).forEach(param -> {
-                            Schema schema = getSchemaFromParameter(param);
-                            if (schema == null || !ICodigoEnum.class.isAssignableFrom(schema.implementation())) return;
+        Map<String, Object> controllers = context.getBeansWithAnnotation(RestController.class);
+        for (Object bean : controllers.values()) {
+            if (bean == null) continue;
+            for (java.lang.reflect.Method method : AopUtils.getTargetClass(bean).getDeclaredMethods()) {
+                for (java.lang.reflect.Parameter param : method.getParameters()) {
+                    Schema schema = getSchemaFromParameter(param);
+                    if (schema == null || !ICodigoEnum.class.isAssignableFrom(schema.implementation())) continue;
 
-                            String paramName = resolveParamName(param);
-                            if (paramName == null) return;
+                    String paramName = resolveParamName(param);
+                    if (paramName == null) continue;
 
-                            @SuppressWarnings("unchecked")
-                            Class<? extends ICodigoEnum> enumClass =
-                                    (Class<? extends ICodigoEnum>) schema.implementation();
-
-                            descricoesPorParam.put(paramName, EnumDescricao.of(enumClass));
-                        })
-                )
-        );
+                    @SuppressWarnings("unchecked")
+                    Class<? extends ICodigoEnum> enumClass = (Class<? extends ICodigoEnum>) schema.implementation();
+                    descricoesPorParam.put(paramName, EnumDescricao.of(enumClass));
+                }
+            }
+        }
 
         return descricoesPorParam;
     }

@@ -19,19 +19,12 @@ public enum TipoTransacao implements ICodigoEnum {
     }
 
     @JsonValue
-    public int getCodigo() {
-        return codigo;
-    }
+    public int getCodigo() { return codigo; }
 
-    public String getDescricao() {
-        return descricao;
-    }
+    public String getDescricao() { return descricao; }
 
     @JsonCreator
     public static TipoTransacao fromCodigo(int codigo) {
-        for (TipoTransacao tipo : values()) {
-            if (tipo.codigo == codigo) return tipo;
-        }
-        throw new IllegalArgumentException("TipoTransacao inválido: " + codigo);
+        return ICodigoEnum.fromCodigo(TipoTransacao.class, codigo);
     }
 }

@@ -16,19 +16,12 @@ public enum DirecaoTransacao implements ICodigoEnum {
     }
 
     @JsonValue
-    public int getCodigo() {
-        return codigo;
-    }
+    public int getCodigo() { return codigo; }
 
-    public String getDescricao() {
-        return descricao;
-    }
+    public String getDescricao() { return descricao; }
 
     @JsonCreator
     public static DirecaoTransacao fromCodigo(int codigo) {
-        for (DirecaoTransacao direcao : values()) {
-            if (direcao.codigo == codigo) return direcao;
-        }
-        throw new IllegalArgumentException("DirecaoTransacao inválida: " + codigo);
+        return ICodigoEnum.fromCodigo(DirecaoTransacao.class, codigo);
     }
 }

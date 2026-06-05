@@ -7,6 +7,7 @@ import com.nobolso.api.model.enums.CategoriaTransacao;
 import com.nobolso.api.model.enums.DirecaoTransacao;
 import com.nobolso.api.model.enums.TipoTransacao;
 import com.nobolso.api.repository.TransacaoRepository;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -15,6 +16,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+@Profile("dev")
 @Repository
 public class MockTransacaoRepository implements TransacaoRepository {
 

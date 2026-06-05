@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -24,6 +25,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Validated
 @RestController
 @RequestMapping("/transacoes")
 @Tag(name = "Transações", description = "Gerenciamento de transações financeiras")
@@ -56,6 +58,30 @@ public class TransacaoController {
 
         TransacaoFilterDTO filter = new TransacaoFilterDTO(tipo, direcao, categoria, descricao, dataInicio, dataFim);
         return transacaoService.pesquisar(filter).stream().map(mapper::toResponse).toList();
+    }
+
+    @GetMapping("/saldo")
+    @Operation(summary = "Consultar saldo", description = "Retorna o saldo calculado (entradas - saídas). Pode ser filtrado por período ou direção.")
+    @ApiResponse(responseCode = "200", description = "Saldo calculado com sucesso")
+    public SaldoResponseDTO buscarSaldo(
+            @Parameter(description = "Direção da transação", schema = @Schema(implementation = DirecaoTransacao.class))
+            @RequestParam(required = false) Integer direcao,
+            @Parameter(description = "Data início do período")
+            @RequestParam(required = false) LocalDateTime dataInicio,
+            @Parameter(description = "Data fim do período")
+            @RequestParam(required = false) LocalDateTime dataFim) {
+
+        TransacaoFilterDTO filter = new TransacaoFilterDTO(null, direcao, null, null, dataInicio, dataFim);
+        return new SaldoResponseDTO(transacaoService.buscarSaldo(filter));
+    }
+
+    @GetMapping("/recentes")
+    @Operation(summary = "Últimas transações", description = "Retorna as N transações mais recentes ordenadas por data")
+    @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
+    public List<TransacaoResponseDTO> buscarRecentes(
+            @Parameter(description = "Quantidade de transações a retornar (padrão: 5)")
+            @RequestParam(defaultValue = "5") int limit) {
+        return transacaoService.buscarUltimasTransacoes(limit).stream().map(mapper::toResponse).toList();
     }
 
     @GetMapping("/{id}")
@@ -101,29 +127,5 @@ public class TransacaoController {
             @PathVariable Long id) {
         transacaoService.deletar(id);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/saldo")
-    @Operation(summary = "Consultar saldo", description = "Retorna o saldo calculado (entradas - saídas). Pode ser filtrado por período ou direção.")
-    @ApiResponse(responseCode = "200", description = "Saldo calculado com sucesso")
-    public SaldoResponseDTO buscarSaldo(
-            @Parameter(description = "Direção da transação", schema = @Schema(implementation = DirecaoTransacao.class))
-            @RequestParam(required = false) Integer direcao,
-            @Parameter(description = "Data início do período")
-            @RequestParam(required = false) LocalDateTime dataInicio,
-            @Parameter(description = "Data fim do período")
-            @RequestParam(required = false) LocalDateTime dataFim) {
-
-        TransacaoFilterDTO filter = new TransacaoFilterDTO(null, direcao, null, null, dataInicio, dataFim);
-        return new SaldoResponseDTO(transacaoService.buscarSaldo(filter));
-    }
-
-    @GetMapping("/recentes")
-    @Operation(summary = "Últimas transações", description = "Retorna as N transações mais recentes ordenadas por data")
-    @ApiResponse(responseCode = "200", description = "Lista retornada com sucesso")
-    public List<TransacaoResponseDTO> buscarRecentes(
-            @Parameter(description = "Quantidade de transações a retornar (padrão: 5)")
-            @RequestParam(defaultValue = "5") int limit) {
-        return transacaoService.buscarUltimasTransacoes(limit).stream().map(mapper::toResponse).toList();
     }
 }

@@ -21,19 +21,12 @@ public enum CategoriaTransacao implements ICodigoEnum {
     }
 
     @JsonValue
-    public int getCodigo() {
-        return codigo;
-    }
+    public int getCodigo() { return codigo; }
 
-    public String getDescricao() {
-        return descricao;
-    }
+    public String getDescricao() { return descricao; }
 
     @JsonCreator
     public static CategoriaTransacao fromCodigo(int codigo) {
-        for (CategoriaTransacao categoria : values()) {
-            if (categoria.codigo == codigo) return categoria;
-        }
-        throw new IllegalArgumentException("CategoriaTransacao inválida: " + codigo);
+        return ICodigoEnum.fromCodigo(CategoriaTransacao.class, codigo);
     }
 }
