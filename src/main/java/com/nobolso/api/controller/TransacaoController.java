@@ -25,7 +25,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/transacoes")
+@RequestMapping("/transacoes")
 @Tag(name = "Transações", description = "Gerenciamento de transações financeiras")
 public class TransacaoController {
 

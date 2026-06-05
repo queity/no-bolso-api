@@ -7,3 +7,4 @@ services:
       SPRING_DATASOURCE_URL: jdbc:h2:mem:nobolso
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.h2.Driver
       SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+      SPRING_MVC_SERVLET_PATH: /api
