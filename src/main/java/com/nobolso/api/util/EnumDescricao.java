@@ -9,8 +9,9 @@ public final class EnumDescricao {
 
     private EnumDescricao() {}
 
-    public static <E extends Enum<E> & ICodigoEnum> String of(Class<E> enumClass) {
-        return Arrays.stream(enumClass.getEnumConstants())
+    public static String of(Class<? extends ICodigoEnum> enumClass) {
+        if (!enumClass.isEnum()) throw new IllegalArgumentException("Classe não é um enum: " + enumClass);
+        return Arrays.stream((ICodigoEnum[]) enumClass.getEnumConstants())
                 .map(e -> e.getCodigo() + "=" + e.getDescricao())
                 .collect(Collectors.joining(", "));
     }
