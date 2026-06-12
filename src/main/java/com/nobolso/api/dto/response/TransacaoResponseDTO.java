@@ -32,11 +32,21 @@ public record TransacaoResponseDTO(
         LocalDateTime dataCadastro,
 
         @Schema(description = "Data da última atualização do registro", example = "2026-06-01T12:00:00")
-        LocalDateTime dataAtualizacao
+        LocalDateTime dataAtualizacao,
+
+        @Schema(description = "Informações do comprovante anexado, se houver")
+        ComprovanteInfo comprovante
 ) {
         @Schema(description = "Representação de um enum com código e descrição")
         public record EnumDTO(
                 @Schema(description = "Código numérico", example = "1") int codigo,
                 @Schema(description = "Descrição legível", example = "Pix") String descricao
+        ) {}
+
+        @Schema(description = "Metadados do comprovante anexado")
+        public record ComprovanteInfo(
+                @Schema(description = "Nome original do arquivo", example = "recibo.pdf") String nome,
+                @Schema(description = "Tipo MIME do arquivo", example = "application/pdf") String contentType,
+                @Schema(description = "URL para download do comprovante", example = "/transacoes/1/comprovante") String url
         ) {}
 }

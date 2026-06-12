@@ -4,4 +4,8 @@ public class TransacaoNaoEncontradaException extends RuntimeException {
     public TransacaoNaoEncontradaException(Long id) {
         super("Transação não encontrada: " + id);
     }
+
+    public TransacaoNaoEncontradaException(String message) {
+        super(message);
+    }
 }

@@ -4,11 +4,15 @@ import com.nobolso.api.dto.request.TransacaoFilterDTO;
 import com.nobolso.api.dto.request.TransacaoInputDTO;
 import com.nobolso.api.exception.TransacaoNaoEncontradaException;
 import com.nobolso.api.model.Transacao;
+import com.nobolso.api.repository.ComprovanteRepository;
 import com.nobolso.api.repository.TransacaoRepository;
 import com.nobolso.api.util.SaldoCalculator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -18,15 +22,30 @@ import java.util.List;
 public class TransacaoService {
 
     private final TransacaoRepository repository;
+    private final ComprovanteRepository comprovanteRepository;
 
-    public TransacaoService(TransacaoRepository repository) {
+    public TransacaoService(TransacaoRepository repository, ComprovanteRepository comprovanteRepository) {
         this.repository = repository;
+        this.comprovanteRepository = comprovanteRepository;
     }
 
     @Transactional
     public Transacao adicionar(TransacaoInputDTO input) {
         log.info("Adicionando transação: valor={}, direcao={}", input.valor(), input.direcao());
         return repository.adicionar(input);
+    }
+
+    @Transactional
+    public Transacao adicionarComprovante(Long id, MultipartFile arquivo) {
+        log.info("Adicionando comprovante para transação id={}", id);
+        Transacao transacao = buscarPorId(id);
+        try {
+            comprovanteRepository.salvar(transacao, arquivo.getBytes(),
+                    arquivo.getOriginalFilename(), arquivo.getContentType());
+            return transacao;
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Erro ao processar o arquivo: " + e.getMessage());
+        }
     }
 
     @Transactional(readOnly = true)

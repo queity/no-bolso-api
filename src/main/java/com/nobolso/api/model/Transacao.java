@@ -5,6 +5,7 @@ import com.nobolso.api.model.enums.DirecaoTransacao;
 import com.nobolso.api.model.enums.TipoTransacao;
 import jakarta.persistence.*;
 import lombok.*;
+
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -51,4 +52,8 @@ public class Transacao {
     @LastModifiedDate
     @Column
     private LocalDateTime dataAtualizacao;
+
+    @OneToOne(mappedBy = "transacao", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Comprovante comprovante;
+    
 }

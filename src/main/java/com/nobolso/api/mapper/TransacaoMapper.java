@@ -9,6 +9,13 @@ import org.springframework.stereotype.Component;
 public class TransacaoMapper {
 
     public TransacaoResponseDTO toResponse(Transacao t) {
+        TransacaoResponseDTO.ComprovanteInfo comprovanteInfo = t.getComprovante() != null
+                ? new TransacaoResponseDTO.ComprovanteInfo(
+                        t.getComprovante().getNome(),
+                        t.getComprovante().getContentType(),
+                        "/transacoes/" + t.getId() + "/comprovante")
+                : null;
+
         return new TransacaoResponseDTO(
                 t.getId(),
                 t.getValor(),
@@ -20,7 +27,8 @@ public class TransacaoMapper {
                 t.getDescricao(),
                 t.getDataTransacao(),
                 t.getDataCadastro(),
-                t.getDataAtualizacao()
+                t.getDataAtualizacao(),
+                comprovanteInfo
         );
     }
 }
