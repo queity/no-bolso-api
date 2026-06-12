@@ -2,6 +2,7 @@ package com.nobolso.api.repository.mock;
 
 import com.nobolso.api.dto.request.TransacaoFilterDTO;
 import com.nobolso.api.dto.request.TransacaoInputDTO;
+import com.nobolso.api.model.Comprovante;
 import com.nobolso.api.model.Transacao;
 import com.nobolso.api.model.enums.CategoriaTransacao;
 import com.nobolso.api.model.enums.DirecaoTransacao;
@@ -52,7 +53,7 @@ public class MockTransacaoRepository implements TransacaoRepository {
     }
 
     @Override
-    public Transacao adicionar(TransacaoInputDTO input) {
+    public Transacao adicionar(TransacaoInputDTO input, Comprovante comprovante) {
         Transacao transacao = Transacao.builder()
                 .id(nextId.getAndIncrement())
                 .valor(input.valor())
@@ -62,6 +63,7 @@ public class MockTransacaoRepository implements TransacaoRepository {
                 .descricao(input.descricao())
                 .dataTransacao(input.dataTransacao())
                 .dataCadastro(LocalDateTime.now())
+                .comprovante(comprovante)
                 .build();
         store.put(transacao.getId(), transacao);
         return transacao;
@@ -87,7 +89,7 @@ public class MockTransacaoRepository implements TransacaoRepository {
     }
 
     @Override
-    public Optional<Transacao> atualizar(Long id, TransacaoInputDTO input) {
+    public Optional<Transacao> atualizar(Long id, TransacaoInputDTO input, Comprovante comprovante) {
         Transacao existing = store.get(id);
         if (existing == null) return Optional.empty();
         Transacao updated = Transacao.builder()
@@ -100,6 +102,7 @@ public class MockTransacaoRepository implements TransacaoRepository {
                 .dataTransacao(input.dataTransacao())
                 .dataCadastro(existing.getDataCadastro())
                 .dataAtualizacao(LocalDateTime.now())
+                .comprovante(comprovante)
                 .build();
         store.put(id, updated);
         return Optional.of(updated);

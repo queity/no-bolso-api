@@ -21,10 +21,6 @@ public class Comprovante {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "transacao_id", nullable = false, unique = true)
-    private Transacao transacao;
-
     @Lob
     @Column(nullable = false)
     private byte[] bytes;

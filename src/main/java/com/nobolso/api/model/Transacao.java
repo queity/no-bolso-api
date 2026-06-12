@@ -53,7 +53,8 @@ public class Transacao {
     @Column
     private LocalDateTime dataAtualizacao;
 
-    @OneToOne(mappedBy = "transacao", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comprovante_id")
     private Comprovante comprovante;
     
 }

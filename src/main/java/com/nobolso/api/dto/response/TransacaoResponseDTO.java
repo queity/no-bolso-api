@@ -45,8 +45,8 @@ public record TransacaoResponseDTO(
 
         @Schema(description = "Metadados do comprovante anexado")
         public record ComprovanteInfo(
+                @Schema(description = "Identificador do comprovante", example = "1") Long id,
                 @Schema(description = "Nome original do arquivo", example = "recibo.pdf") String nome,
-                @Schema(description = "Tipo MIME do arquivo", example = "application/pdf") String contentType,
-                @Schema(description = "URL para download do comprovante", example = "/transacoes/1/comprovante") String url
+                @Schema(description = "Tipo MIME do arquivo", example = "application/pdf") String contentType
         ) {}
 }

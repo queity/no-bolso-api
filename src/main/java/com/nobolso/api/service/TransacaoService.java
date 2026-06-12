@@ -3,6 +3,7 @@ package com.nobolso.api.service;
 import com.nobolso.api.dto.request.TransacaoFilterDTO;
 import com.nobolso.api.dto.request.TransacaoInputDTO;
 import com.nobolso.api.exception.TransacaoNaoEncontradaException;
+import com.nobolso.api.model.Comprovante;
 import com.nobolso.api.model.Transacao;
 import com.nobolso.api.repository.ComprovanteRepository;
 import com.nobolso.api.repository.TransacaoRepository;
@@ -10,9 +11,6 @@ import com.nobolso.api.util.SaldoCalculator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -32,20 +30,12 @@ public class TransacaoService {
     @Transactional
     public Transacao adicionar(TransacaoInputDTO input) {
         log.info("Adicionando transação: valor={}, direcao={}", input.valor(), input.direcao());
-        return repository.adicionar(input);
-    }
-
-    @Transactional
-    public Transacao adicionarComprovante(Long id, MultipartFile arquivo) {
-        log.info("Adicionando comprovante para transação id={}", id);
-        Transacao transacao = buscarPorId(id);
-        try {
-            comprovanteRepository.salvar(transacao, arquivo.getBytes(),
-                    arquivo.getOriginalFilename(), arquivo.getContentType());
-            return transacao;
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Erro ao processar o arquivo: " + e.getMessage());
+        Comprovante comprovante = null;
+        if (input.comprovanteId() != null) {
+            comprovante = comprovanteRepository.buscarPorId(input.comprovanteId())
+                    .orElseThrow(() -> new IllegalArgumentException("Comprovante não encontrado: " + input.comprovanteId()));
         }
+        return repository.adicionar(input, comprovante);
     }
 
     @Transactional(readOnly = true)
@@ -64,7 +54,12 @@ public class TransacaoService {
     @Transactional
     public Transacao atualizar(Long id, TransacaoInputDTO input) {
         log.info("Atualizando transação id={}", id);
-        return repository.atualizar(id, input)
+        Comprovante comprovante = null;
+        if (input.comprovanteId() != null) {
+            comprovante = comprovanteRepository.buscarPorId(input.comprovanteId())
+                    .orElseThrow(() -> new IllegalArgumentException("Comprovante não encontrado: " + input.comprovanteId()));
+        }
+        return repository.atualizar(id, input, comprovante)
                 .orElseThrow(() -> new TransacaoNaoEncontradaException(id));
     }
 

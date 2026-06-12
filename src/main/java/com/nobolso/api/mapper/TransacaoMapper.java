@@ -11,9 +11,9 @@ public class TransacaoMapper {
     public TransacaoResponseDTO toResponse(Transacao t) {
         TransacaoResponseDTO.ComprovanteInfo comprovanteInfo = t.getComprovante() != null
                 ? new TransacaoResponseDTO.ComprovanteInfo(
+                        t.getComprovante().getId(),
                         t.getComprovante().getNome(),
-                        t.getComprovante().getContentType(),
-                        "/transacoes/" + t.getId() + "/comprovante")
+                        t.getComprovante().getContentType())
                 : null;
 
         return new TransacaoResponseDTO(

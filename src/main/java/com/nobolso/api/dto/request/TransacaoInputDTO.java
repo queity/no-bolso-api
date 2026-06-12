@@ -28,5 +28,8 @@ public record TransacaoInputDTO(
         String descricao,
 
         @Schema(description = "Data da transação (ISO 8601)", example = "2026-06-01T12:00:00")
-        @NotNull LocalDateTime dataTransacao
+        @NotNull LocalDateTime dataTransacao,
+
+        @Schema(description = "ID do comprovante previamente enviado", example = "1")
+        Long comprovanteId
 ) {}

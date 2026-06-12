@@ -4,10 +4,7 @@ import com.nobolso.api.dto.request.TransacaoFilterDTO;
 import com.nobolso.api.dto.request.TransacaoInputDTO;
 import com.nobolso.api.dto.response.SaldoResponseDTO;
 import com.nobolso.api.dto.response.TransacaoResponseDTO;
-import com.nobolso.api.exception.TransacaoNaoEncontradaException;
 import com.nobolso.api.mapper.TransacaoMapper;
-import com.nobolso.api.model.Comprovante;
-import com.nobolso.api.model.Transacao;
 import com.nobolso.api.model.enums.CategoriaTransacao;
 import com.nobolso.api.model.enums.DirecaoTransacao;
 import com.nobolso.api.model.enums.TipoTransacao;
@@ -19,18 +16,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 
 @Validated
 @RestController
@@ -112,39 +105,6 @@ public class TransacaoController {
                 .buildAndExpand(response.id())
                 .toUri();
         return ResponseEntity.created(location).body(response);
-    }
-
-    @PutMapping(value = "/{id}/comprovante", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "Anexar comprovante", description = "Faz upload ou substituição do comprovante da transação")
-    @ApiResponse(responseCode = "200", description = "Comprovante anexado com sucesso")
-    @ApiResponse(responseCode = "404", description = "Transação não encontrada", content = @Content(schema = @Schema(hidden = true)))
-    public TransacaoResponseDTO adicionarComprovante(
-            @Parameter(description = "ID da transação", required = true)
-            @PathVariable Long id,
-            @RequestParam("comprovante") MultipartFile comprovante) {
-        return mapper.toResponse(transacaoService.adicionarComprovante(id, comprovante));
-    }
-
-    @GetMapping("/{id}/comprovante")
-    @Operation(summary = "Download do comprovante", description = "Retorna o arquivo de comprovante anexado à transação")
-    @ApiResponse(responseCode = "200", description = "Arquivo retornado com sucesso")
-    @ApiResponse(responseCode = "404", description = "Transação ou comprovante não encontrado", content = @Content(schema = @Schema(hidden = true)))
-    public ResponseEntity<byte[]> downloadComprovante(
-            @Parameter(description = "ID da transação", required = true)
-            @PathVariable Long id) {
-        Transacao transacao = transacaoService.buscarPorId(id);
-        Comprovante comprovante = transacao.getComprovante();
-        if (comprovante == null) {
-            throw new TransacaoNaoEncontradaException("Transação " + id + " não possui comprovante");
-        }
-        String contentType = Objects.requireNonNullElse(
-                comprovante.getContentType(), MediaType.APPLICATION_OCTET_STREAM_VALUE);
-        String nome = Objects.requireNonNullElse(comprovante.getNome(), "comprovante");
-
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(contentType))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + nome + "\"")
-                .body(comprovante.getBytes());
     }
 
     @PutMapping("/{id}")
