@@ -1,3 +1,7 @@
+networks:
+  nobolso-network:
+    name: nobolso-network
+
 services:
   api:
     build: .
@@ -8,3 +12,5 @@ services:
       SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.h2.Driver
       SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
       SPRING_MVC_SERVLET_PATH: /api
+    networks:
+      - nobolso-network
