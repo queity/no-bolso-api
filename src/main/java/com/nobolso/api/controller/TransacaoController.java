@@ -2,9 +2,11 @@ package com.nobolso.api.controller;
 
 import com.nobolso.api.dto.request.TransacaoFilterDTO;
 import com.nobolso.api.dto.request.TransacaoInputDTO;
+import com.nobolso.api.dto.response.PageResponseDTO;
 import com.nobolso.api.dto.response.SaldoResponseDTO;
 import com.nobolso.api.dto.response.TransacaoResponseDTO;
 import com.nobolso.api.mapper.TransacaoMapper;
+import com.nobolso.api.model.Transacao;
 import com.nobolso.api.model.enums.CategoriaTransacao;
 import com.nobolso.api.model.enums.DirecaoTransacao;
 import com.nobolso.api.model.enums.TipoTransacao;
@@ -58,6 +60,33 @@ public class TransacaoController {
 
         TransacaoFilterDTO filter = new TransacaoFilterDTO(tipo, direcao, categoria, descricao, dataInicio, dataFim);
         return transacaoService.pesquisar(filter).stream().map(mapper::toResponse).toList();
+    }
+
+    @GetMapping("/paginado")
+    @Operation(summary = "Pesquisar transações paginado", description = "Retorna transações paginadas.")
+    @ApiResponse(responseCode = "200", description = "Página retornada com sucesso")
+    public PageResponseDTO<TransacaoResponseDTO> pesquisarPaginado(
+            @Parameter(description = "Tipo da transação", schema = @Schema(implementation = TipoTransacao.class))
+            @RequestParam(required = false) Integer tipo,
+            @Parameter(description = "Direção da transação", schema = @Schema(implementation = DirecaoTransacao.class))
+            @RequestParam(required = false) Integer direcao,
+            @Parameter(description = "Categoria da transação", schema = @Schema(implementation = CategoriaTransacao.class))
+            @RequestParam(required = false) Integer categoria,
+            @Parameter(description = "Texto contido na descrição")
+            @RequestParam(required = false) String descricao,
+            @Parameter(description = "Data início do período (ISO 8601)")
+            @RequestParam(required = false) LocalDateTime dataInicio,
+            @Parameter(description = "Data fim do período (ISO 8601)")
+            @RequestParam(required = false) LocalDateTime dataFim,
+            @Parameter(description = "Número da página (base 1)", example = "1")
+            @RequestParam(defaultValue = "1") int page,
+            @Parameter(description = "Tamanho da página (máx. 100)", example = "10")
+            @RequestParam(defaultValue = "10") int size) {
+
+        TransacaoFilterDTO filter = new TransacaoFilterDTO(tipo, direcao, categoria, descricao, dataInicio, dataFim);
+        PageResponseDTO<Transacao> resultado = transacaoService.pesquisarPaginado(filter, page, size);
+        List<TransacaoResponseDTO> content = resultado.content().stream().map(mapper::toResponse).toList();
+        return new PageResponseDTO<>(content, resultado.page(), resultado.size(), resultado.totalElements(), resultado.totalPages());
     }
 
     @GetMapping("/saldo")

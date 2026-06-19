@@ -2,6 +2,7 @@ package com.nobolso.api.service;
 
 import com.nobolso.api.dto.request.TransacaoFilterDTO;
 import com.nobolso.api.dto.request.TransacaoInputDTO;
+import com.nobolso.api.dto.response.PageResponseDTO;
 import com.nobolso.api.exception.TransacaoNaoEncontradaException;
 import com.nobolso.api.model.Comprovante;
 import com.nobolso.api.model.Transacao;
@@ -68,6 +69,14 @@ public class TransacaoService {
     public void deletar(Long id) {
         log.info("Deletando transação id={}", id);
         if (!repository.deletar(id)) throw new TransacaoNaoEncontradaException(id);
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponseDTO<Transacao> pesquisarPaginado(TransacaoFilterDTO filters, int page, int size) {
+        if (page < 1) throw new IllegalArgumentException("O número da página deve ser maior que zero");
+        if (size <= 0 || size > 100) throw new IllegalArgumentException("O tamanho da página deve ser entre 1 e 100");
+        validarPeriodo(filters.dataInicio(), filters.dataFim());
+        return repository.pesquisarPaginado(filters, page, size);
     }
 
     @Transactional(readOnly = true)

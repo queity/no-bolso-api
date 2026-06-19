@@ -2,6 +2,7 @@ package com.nobolso.api.repository.mock;
 
 import com.nobolso.api.dto.request.TransacaoFilterDTO;
 import com.nobolso.api.dto.request.TransacaoInputDTO;
+import com.nobolso.api.dto.response.PageResponseDTO;
 import com.nobolso.api.model.Comprovante;
 import com.nobolso.api.model.Transacao;
 import com.nobolso.api.model.enums.CategoriaTransacao;
@@ -86,6 +87,16 @@ public class MockTransacaoRepository implements TransacaoRepository {
                 .filter(t -> filters.dataFim() == null || !t.getDataTransacao().isAfter(filters.dataFim()))
                 .sorted(Comparator.comparing(Transacao::getDataTransacao).reversed())
                 .toList();
+    }
+
+    @Override
+    public PageResponseDTO<Transacao> pesquisarPaginado(TransacaoFilterDTO filters, int page, int size) {
+        List<Transacao> todos = pesquisar(filters);
+        long total = todos.size();
+        int totalPages = size > 0 ? (int) Math.ceil((double) total / size) : 0;
+        int fromIndex = Math.min((page - 1) * size, (int) total);
+        int toIndex = Math.min(fromIndex + size, (int) total);
+        return new PageResponseDTO<>(todos.subList(fromIndex, toIndex), page, size, total, totalPages);
     }
 
     @Override
