@@ -5,6 +5,10 @@ import com.nobolso.api.dto.request.TransacaoInputDTO;
 import com.nobolso.api.exception.TransacaoNaoEncontradaException;
 import com.nobolso.api.model.Comprovante;
 import com.nobolso.api.model.Transacao;
+import com.nobolso.api.model.enums.CategoriaTransacao;
+import com.nobolso.api.model.enums.DirecaoTransacao;
+import com.nobolso.api.model.enums.ICodigoEnum;
+import com.nobolso.api.model.enums.TipoTransacao;
 import com.nobolso.api.repository.ComprovanteRepository;
 import com.nobolso.api.repository.TransacaoRepository;
 import com.nobolso.api.util.SaldoCalculator;
@@ -13,11 +17,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
 @Service
 public class TransacaoService {
+
+    private static final int ANOS_MAX_RETROATIVO = 10;
 
     private final TransacaoRepository repository;
     private final ComprovanteRepository comprovanteRepository;
@@ -30,11 +37,8 @@ public class TransacaoService {
     @Transactional
     public Transacao adicionar(TransacaoInputDTO input) {
         log.info("Adicionando transação: valor={}, direcao={}", input.valor(), input.direcao());
-        Comprovante comprovante = null;
-        if (input.comprovanteId() != null) {
-            comprovante = comprovanteRepository.buscarPorId(input.comprovanteId())
-                    .orElseThrow(() -> new IllegalArgumentException("Comprovante não encontrado: " + input.comprovanteId()));
-        }
+        validarInput(input);
+        Comprovante comprovante = resolverComprovante(input.comprovanteId());
         return repository.adicionar(input, comprovante);
     }
 
@@ -54,11 +58,8 @@ public class TransacaoService {
     @Transactional
     public Transacao atualizar(Long id, TransacaoInputDTO input) {
         log.info("Atualizando transação id={}", id);
-        Comprovante comprovante = null;
-        if (input.comprovanteId() != null) {
-            comprovante = comprovanteRepository.buscarPorId(input.comprovanteId())
-                    .orElseThrow(() -> new IllegalArgumentException("Comprovante não encontrado: " + input.comprovanteId()));
-        }
+        validarInput(input);
+        Comprovante comprovante = resolverComprovante(input.comprovanteId());
         return repository.atualizar(id, input, comprovante)
                 .orElseThrow(() -> new TransacaoNaoEncontradaException(id));
     }
@@ -81,7 +82,30 @@ public class TransacaoService {
         return repository.buscarUltimasTransacoes(limit);
     }
 
-    private void validarPeriodo(java.time.LocalDateTime dataInicio, java.time.LocalDateTime dataFim) {
+    private void validarInput(TransacaoInputDTO input) {
+        ICodigoEnum.fromCodigo(TipoTransacao.class, input.tipo());
+        ICodigoEnum.fromCodigo(DirecaoTransacao.class, input.direcao());
+        if (input.categoria() != null) {
+            ICodigoEnum.fromCodigo(CategoriaTransacao.class, input.categoria());
+        }
+        validarDataTransacao(input.dataTransacao());
+    }
+
+    private void validarDataTransacao(LocalDateTime data) {
+        LocalDateTime limiteRetroativo = LocalDateTime.now().minusYears(ANOS_MAX_RETROATIVO);
+        if (data.isBefore(limiteRetroativo)) {
+            throw new IllegalArgumentException(
+                    "A data da transação não pode ser anterior a " + ANOS_MAX_RETROATIVO + " anos atrás");
+        }
+    }
+
+    private Comprovante resolverComprovante(Long comprovanteId) {
+        if (comprovanteId == null) return null;
+        return comprovanteRepository.buscarPorId(comprovanteId)
+                .orElseThrow(() -> new IllegalArgumentException("Comprovante não encontrado: " + comprovanteId));
+    }
+
+    private void validarPeriodo(LocalDateTime dataInicio, LocalDateTime dataFim) {
         if (dataInicio != null && dataFim != null && dataInicio.isAfter(dataFim)) {
             throw new IllegalArgumentException("Data de início não pode ser maior que a data fim");
         }
