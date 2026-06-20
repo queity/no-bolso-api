@@ -80,7 +80,11 @@ public class MockTransacaoRepository implements TransacaoRepository {
         return store.values().stream()
                 .filter(t -> filters.tipo() == null || t.getTipo().getCodigo() == filters.tipo())
                 .filter(t -> filters.direcao() == null || t.getDirecao().getCodigo() == filters.direcao())
-                .filter(t -> filters.categoria() == null || (t.getCategoria() != null && t.getCategoria().getCodigo() == filters.categoria()))
+                .filter(t -> {
+                    if (Boolean.TRUE.equals(filters.semCategoria())) return t.getCategoria() == null;
+                    if (filters.categoria() != null) return t.getCategoria() != null && t.getCategoria().getCodigo() == filters.categoria();
+                    return true;
+                })
                 .filter(t -> filters.descricao() == null ||
                         (t.getDescricao() != null && t.getDescricao().toLowerCase().contains(filters.descricao().toLowerCase())))
                 .filter(t -> filters.dataInicio() == null || !t.getDataTransacao().isBefore(filters.dataInicio()))

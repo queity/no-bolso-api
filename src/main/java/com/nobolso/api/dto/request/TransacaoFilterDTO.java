@@ -6,6 +6,7 @@ public record TransacaoFilterDTO(
         Integer tipo,
         Integer direcao,
         Integer categoria,
+        Boolean semCategoria,
         String descricao,
         LocalDateTime dataInicio,
         LocalDateTime dataFim
