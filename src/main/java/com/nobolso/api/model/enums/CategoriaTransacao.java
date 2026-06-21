@@ -10,7 +10,11 @@ public enum CategoriaTransacao implements ICodigoEnum {
     CASA(4, "Casa"),
     EDUCACAO(5, "Educação"),
     RECEITAS_FIXAS(6, "Receitas Fixas"),
-    OUTROS(7, "Outros");
+    OUTROS(7, "Outros"),
+    SAUDE(8, "Saúde"),
+    TRANSPORTE(9, "Transporte"),
+    RECEITAS_VARIAVEIS(10, "Receitas Variáveis"),
+    VIAGEM(11, "Viagem");
 
     private final int codigo;
     private final String descricao;

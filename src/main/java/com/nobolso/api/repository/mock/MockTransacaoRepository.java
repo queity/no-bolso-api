@@ -32,25 +32,63 @@ public class MockTransacaoRepository implements TransacaoRepository {
     }
 
     private void seed() {
+        LocalDateTime now = LocalDateTime.now();
+
         List<Transacao> initial = List.of(
-            Transacao.builder()
-                .id(1L).valor(new BigDecimal("1500.00")).tipo(TipoTransacao.DEPOSITO)
-                .direcao(DirecaoTransacao.ENTRADA).categoria(CategoriaTransacao.RECEITAS_FIXAS)
-                .descricao("Salário mensal").dataTransacao(LocalDateTime.now().minusDays(2))
-                .dataCadastro(LocalDateTime.now().minusDays(2)).build(),
-            Transacao.builder()
-                .id(2L).valor(new BigDecimal("250.00")).tipo(TipoTransacao.PIX)
-                .direcao(DirecaoTransacao.SAIDA).categoria(CategoriaTransacao.CASA)
-                .descricao("Pagamento aluguel").dataTransacao(LocalDateTime.now().minusDays(5))
-                .dataCadastro(LocalDateTime.now().minusDays(5)).build(),
-            Transacao.builder()
-                .id(3L).valor(new BigDecimal("800.00")).tipo(TipoTransacao.TRANSFERENCIA)
-                .direcao(DirecaoTransacao.SAIDA).categoria(CategoriaTransacao.ALIMENTACAO)
-                .descricao("Compras do mês").dataTransacao(LocalDateTime.now().minusDays(10))
-                .dataCadastro(LocalDateTime.now().minusDays(10)).build()
+
+            // ── Mês atual (10 transações → 2 páginas) ──────────────────────
+            tx(1,  "1500.00", TipoTransacao.DEPOSITO,     DirecaoTransacao.ENTRADA, CategoriaTransacao.RECEITAS_FIXAS,   "Salário mensal",            now.minusDays(1)),
+            tx(2,  "320.00",  TipoTransacao.PIX,          DirecaoTransacao.SAIDA,   CategoriaTransacao.CASA,             "Aluguel",                   now.minusDays(2)),
+            tx(3,  "85.50",   TipoTransacao.PIX,          DirecaoTransacao.SAIDA,   CategoriaTransacao.ALIMENTACAO,      "Supermercado",              now.minusDays(3)),
+            tx(4,  "200.00",  TipoTransacao.TRANSFERENCIA,DirecaoTransacao.ENTRADA, CategoriaTransacao.RECEITAS_VARIAVEIS,"Freelance design",          now.minusDays(4)),
+            tx(5,  "49.90",   TipoTransacao.PIX,          DirecaoTransacao.SAIDA,   CategoriaTransacao.LAZER,            "Streaming de música",       now.minusDays(5)),
+            tx(6,  "130.00",  TipoTransacao.SAQUE,        DirecaoTransacao.SAIDA,   CategoriaTransacao.SAUDE,            "Farmácia",                  now.minusDays(8)),
+            tx(7,  "60.00",   TipoTransacao.PIX,          DirecaoTransacao.SAIDA,   CategoriaTransacao.TRANSPORTE,       "Abastecimento",             now.minusDays(10)),
+            tx(8,  "500.00",  TipoTransacao.DEPOSITO,     DirecaoTransacao.ENTRADA, null,                                "Reembolso empresa",         now.minusDays(12)),
+            tx(9,  "75.00",   TipoTransacao.PIX,          DirecaoTransacao.SAIDA,   CategoriaTransacao.ALIMENTACAO,      "Restaurante almoço",        now.minusDays(14)),
+            tx(10, "25.00",   TipoTransacao.PIX,          DirecaoTransacao.SAIDA,   null,                                "Gorjeta",                   now.minusDays(15)),
+
+            // ── Mês anterior (5 transações) ─────────────────────────────────
+            tx(11, "1500.00", TipoTransacao.DEPOSITO,     DirecaoTransacao.ENTRADA, CategoriaTransacao.RECEITAS_FIXAS,   "Salário mensal",            now.minusMonths(1).withDayOfMonth(5)),
+            tx(12, "320.00",  TipoTransacao.PIX,          DirecaoTransacao.SAIDA,   CategoriaTransacao.CASA,             "Aluguel",                   now.minusMonths(1).withDayOfMonth(8)),
+            tx(13, "150.00",  TipoTransacao.TRANSFERENCIA,DirecaoTransacao.SAIDA,   CategoriaTransacao.EDUCACAO,         "Curso online",              now.minusMonths(1).withDayOfMonth(12)),
+            tx(14, "40.00",   TipoTransacao.PIX,          DirecaoTransacao.SAIDA,   CategoriaTransacao.LAZER,            "Cinema",                    now.minusMonths(1).withDayOfMonth(18)),
+            tx(15, "95.00",   TipoTransacao.PIX,          DirecaoTransacao.SAIDA,   CategoriaTransacao.SAUDE,            "Consulta médica",           now.minusMonths(1).withDayOfMonth(22)),
+
+            // ── 2 meses atrás (4 transações) ────────────────────────────────
+            tx(16, "1500.00", TipoTransacao.DEPOSITO,     DirecaoTransacao.ENTRADA, CategoriaTransacao.RECEITAS_FIXAS,   "Salário mensal",            now.minusMonths(2).withDayOfMonth(5)),
+            tx(17, "320.00",  TipoTransacao.PIX,          DirecaoTransacao.SAIDA,   CategoriaTransacao.CASA,             "Aluguel",                   now.minusMonths(2).withDayOfMonth(8)),
+            tx(18, "220.00",  TipoTransacao.SAQUE,        DirecaoTransacao.SAIDA,   CategoriaTransacao.ALIMENTACAO,      "Feira do mês",              now.minusMonths(2).withDayOfMonth(15)),
+            tx(19, "300.00",  TipoTransacao.TRANSFERENCIA,DirecaoTransacao.ENTRADA, CategoriaTransacao.RECEITAS_VARIAVEIS,"Venda produto usado",       now.minusMonths(2).withDayOfMonth(20)),
+
+            // ── 6 meses atrás (3 transações) ────────────────────────────────
+            tx(20, "1500.00", TipoTransacao.DEPOSITO,     DirecaoTransacao.ENTRADA, CategoriaTransacao.RECEITAS_FIXAS,   "Salário mensal",            now.minusMonths(6).withDayOfMonth(5)),
+            tx(21, "1200.00", TipoTransacao.TRANSFERENCIA,DirecaoTransacao.SAIDA,   CategoriaTransacao.CASA,             "Parcela apartamento",       now.minusMonths(6).withDayOfMonth(10)),
+            tx(22, "80.00",   TipoTransacao.PIX,          DirecaoTransacao.SAIDA,   CategoriaTransacao.LAZER,            "Show de música",            now.minusMonths(6).withDayOfMonth(25)),
+
+            // ── Ano anterior (4 transações) ──────────────────────────────────
+            tx(23, "1400.00", TipoTransacao.DEPOSITO,     DirecaoTransacao.ENTRADA, CategoriaTransacao.RECEITAS_FIXAS,   "Salário mensal",            now.minusYears(1).withMonth(3).withDayOfMonth(5)),
+            tx(24, "320.00",  TipoTransacao.PIX,          DirecaoTransacao.SAIDA,   CategoriaTransacao.CASA,             "Aluguel",                   now.minusYears(1).withMonth(3).withDayOfMonth(8)),
+            tx(25, "450.00",  TipoTransacao.TRANSFERENCIA,DirecaoTransacao.SAIDA,   CategoriaTransacao.VIAGEM,           "Passagem aérea",            now.minusYears(1).withMonth(7).withDayOfMonth(14)),
+            tx(26, "900.00",  TipoTransacao.DEPOSITO,     DirecaoTransacao.ENTRADA, CategoriaTransacao.RECEITAS_VARIAVEIS,"Décimo terceiro",           now.minusYears(1).withMonth(12).withDayOfMonth(20))
         );
+
         initial.forEach(t -> store.put(t.getId(), t));
         nextId.set(initial.stream().mapToLong(Transacao::getId).max().orElse(0) + 1);
+    }
+
+    private Transacao tx(long id, String valor, TipoTransacao tipo, DirecaoTransacao direcao,
+                         CategoriaTransacao categoria, String descricao, LocalDateTime data) {
+        return Transacao.builder()
+                .id(id)
+                .valor(new BigDecimal(valor))
+                .tipo(tipo)
+                .direcao(direcao)
+                .categoria(categoria)
+                .descricao(descricao)
+                .dataTransacao(data)
+                .dataCadastro(data)
+                .build();
     }
 
     @Override
