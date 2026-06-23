@@ -3,6 +3,7 @@ package com.nobolso.api.service;
 import com.nobolso.api.dto.request.TransacaoFilterDTO;
 import com.nobolso.api.dto.request.TransacaoInputDTO;
 import com.nobolso.api.dto.response.PageResponseDTO;
+import com.nobolso.api.dto.response.ResumoCategoriaDTO;
 import com.nobolso.api.exception.TransacaoNaoEncontradaException;
 import com.nobolso.api.model.Comprovante;
 import com.nobolso.api.model.Transacao;
@@ -89,6 +90,12 @@ public class TransacaoService {
     public List<Transacao> buscarUltimasTransacoes(int limit) {
         if (limit <= 0) throw new IllegalArgumentException("O limite deve ser um número positivo");
         return repository.buscarUltimasTransacoes(limit);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ResumoCategoriaDTO> resumoPorCategoria(TransacaoFilterDTO filters) {
+        validarPeriodo(filters.dataInicio(), filters.dataFim());
+        return repository.resumoPorCategoria(filters);
     }
 
     private void validarInput(TransacaoInputDTO input) {

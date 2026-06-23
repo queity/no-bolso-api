@@ -3,6 +3,7 @@ package com.nobolso.api.repository.mock;
 import com.nobolso.api.dto.request.TransacaoFilterDTO;
 import com.nobolso.api.dto.request.TransacaoInputDTO;
 import com.nobolso.api.dto.response.PageResponseDTO;
+import com.nobolso.api.dto.response.ResumoCategoriaDTO;
 import com.nobolso.api.model.Comprovante;
 import com.nobolso.api.model.Transacao;
 import com.nobolso.api.model.enums.CategoriaTransacao;
@@ -18,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Profile("dev")
@@ -171,6 +173,21 @@ public class MockTransacaoRepository implements TransacaoRepository {
         return store.values().stream()
                 .sorted(Comparator.comparing(Transacao::getDataTransacao).reversed())
                 .limit(limit)
+                .toList();
+    }
+
+    @Override
+    public List<ResumoCategoriaDTO> resumoPorCategoria(TransacaoFilterDTO filters) {
+        return pesquisar(filters).stream()
+                .filter(t -> t.getCategoria() != null)
+                .collect(Collectors.groupingBy(t -> t.getCategoria().getCodigo()))
+                .entrySet().stream()
+                .map(e -> new ResumoCategoriaDTO(
+                        e.getKey(),
+                        e.getValue().stream().map(Transacao::getValor).reduce(BigDecimal.ZERO, BigDecimal::add),
+                        (long) e.getValue().size()
+                ))
+                .sorted(Comparator.comparing(ResumoCategoriaDTO::total).reversed())
                 .toList();
     }
 }

@@ -3,6 +3,7 @@ package com.nobolso.api.controller;
 import com.nobolso.api.dto.request.TransacaoFilterDTO;
 import com.nobolso.api.dto.request.TransacaoInputDTO;
 import com.nobolso.api.dto.response.PageResponseDTO;
+import com.nobolso.api.dto.response.ResumoCategoriaDTO;
 import com.nobolso.api.dto.response.SaldoResponseDTO;
 import com.nobolso.api.dto.response.TransacaoResponseDTO;
 import com.nobolso.api.mapper.TransacaoMapper;
@@ -119,6 +120,21 @@ public class TransacaoController {
             @Parameter(description = "Quantidade de transações a retornar (padrão: 5)")
             @RequestParam(defaultValue = "5") int limit) {
         return transacaoService.buscarUltimasTransacoes(limit).stream().map(mapper::toResponse).toList();
+    }
+
+    @GetMapping("/resumo/categorias")
+    @Operation(summary = "Resumo por categoria", description = "Retorna total e quantidade de transações agrupados por categoria")
+    @ApiResponse(responseCode = "200", description = "Resumo retornado com sucesso")
+    public List<ResumoCategoriaDTO> resumoPorCategoria(
+            @Parameter(description = "Direção da transação", schema = @Schema(implementation = DirecaoTransacao.class))
+            @RequestParam(required = false) Integer direcao,
+            @Parameter(description = "Data início do período")
+            @RequestParam(required = false) LocalDateTime dataInicio,
+            @Parameter(description = "Data fim do período")
+            @RequestParam(required = false) LocalDateTime dataFim) {
+
+        TransacaoFilterDTO filter = new TransacaoFilterDTO(null, direcao, null, null, null, dataInicio, dataFim);
+        return transacaoService.resumoPorCategoria(filter);
     }
 
     @GetMapping("/{id}")
