@@ -21,28 +21,20 @@ mvn spring-boot:run
 
 ### Docker
 
-O backend utiliza uma rede compartilhada com o frontend. Execute na ordem abaixo:
-
 ```bash
-# 1. sobe o backend (cria a rede nobolso-network)
+# primeira vez (com build)
 docker compose up -d --build
-```
 
-Para subir sem rebuild (nas próximas vezes):
-
-```bash
+# próximas vezes
 docker compose up -d
-```
 
-Para derrubar:
-
-```bash
+# parar
 docker compose down
 ```
 
 A API estará disponível em `http://localhost:8080`.
 
-> **Atenção:** o frontend (`tech-challenge-mz`) deve ser iniciado após o backend, pois ele depende da rede `nobolso-network` criada aqui.
+> O backend e o frontend (`tech-challenge-mz`) compartilham a rede `nobolso-network`. Cada projeto cria a rede automaticamente se ela não existir, portanto não há ordem obrigatória para subir os projetos.
 
 ## Documentação
 
