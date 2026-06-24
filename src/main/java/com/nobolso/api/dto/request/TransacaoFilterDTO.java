@@ -9,5 +9,6 @@ public record TransacaoFilterDTO(
         Boolean semCategoria,
         String descricao,
         LocalDateTime dataInicio,
-        LocalDateTime dataFim
+        LocalDateTime dataFim,
+        Long usuarioId
 ) {}

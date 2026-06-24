@@ -61,7 +61,7 @@ public class TransacaoController {
             @Parameter(description = "Data fim do período (ISO 8601, ex: 2026-12-31T23:59:59)")
             @RequestParam(required = false) LocalDateTime dataFim) {
 
-        TransacaoFilterDTO filter = new TransacaoFilterDTO(tipo, direcao, categoria, semCategoria, descricao, dataInicio, dataFim);
+        TransacaoFilterDTO filter = new TransacaoFilterDTO(tipo, direcao, categoria, semCategoria, descricao, dataInicio, dataFim, null);
         return transacaoService.pesquisar(filter).stream().map(mapper::toResponse).toList();
     }
 
@@ -88,7 +88,7 @@ public class TransacaoController {
             @Parameter(description = "Tamanho da página (máx. 100)", example = "10")
             @RequestParam(defaultValue = "10") int size) {
 
-        TransacaoFilterDTO filter = new TransacaoFilterDTO(tipo, direcao, categoria, semCategoria, descricao, dataInicio, dataFim);
+        TransacaoFilterDTO filter = new TransacaoFilterDTO(tipo, direcao, categoria, semCategoria, descricao, dataInicio, dataFim, null);
         PageResponseDTO<Transacao> resultado = transacaoService.pesquisarPaginado(filter, page, size);
         List<TransacaoResponseDTO> content = resultado.content().stream().map(mapper::toResponse).toList();
         return new PageResponseDTO<>(content, resultado.page(), resultado.size(), resultado.totalElements(), resultado.totalPages());
@@ -109,7 +109,7 @@ public class TransacaoController {
             @Parameter(description = "Data fim do período")
             @RequestParam(required = false) LocalDateTime dataFim) {
 
-        TransacaoFilterDTO filter = new TransacaoFilterDTO(null, direcao, categoria, semCategoria, null, dataInicio, dataFim);
+        TransacaoFilterDTO filter = new TransacaoFilterDTO(null, direcao, categoria, semCategoria, null, dataInicio, dataFim, null);
         return new SaldoResponseDTO(transacaoService.buscarSaldo(filter));
     }
 
@@ -133,7 +133,7 @@ public class TransacaoController {
             @Parameter(description = "Data fim do período")
             @RequestParam(required = false) LocalDateTime dataFim) {
 
-        TransacaoFilterDTO filter = new TransacaoFilterDTO(null, direcao, null, null, null, dataInicio, dataFim);
+        TransacaoFilterDTO filter = new TransacaoFilterDTO(null, direcao, null, null, null, dataInicio, dataFim, null);
         return transacaoService.resumoPorCategoria(filter);
     }
 

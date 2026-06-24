@@ -3,6 +3,7 @@ package com.nobolso.api.model;
 import com.nobolso.api.model.enums.CategoriaTransacao;
 import com.nobolso.api.model.enums.DirecaoTransacao;
 import com.nobolso.api.model.enums.TipoTransacao;
+import com.nobolso.api.model.Usuario;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -56,5 +57,8 @@ public class Transacao {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "comprovante_id")
     private Comprovante comprovante;
-    
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id", nullable = false)
+    private Usuario usuario;
 }

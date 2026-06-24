@@ -7,6 +7,7 @@ import com.nobolso.api.dto.response.ResumoCategoriaDTO;
 import com.nobolso.api.exception.TransacaoNaoEncontradaException;
 import com.nobolso.api.model.Comprovante;
 import com.nobolso.api.model.Transacao;
+import com.nobolso.api.model.Usuario;
 import com.nobolso.api.model.enums.CategoriaTransacao;
 import com.nobolso.api.model.enums.DirecaoTransacao;
 import com.nobolso.api.model.enums.ICodigoEnum;
@@ -15,6 +16,7 @@ import com.nobolso.api.repository.ComprovanteRepository;
 import com.nobolso.api.repository.TransacaoRepository;
 import com.nobolso.api.util.SaldoCalculator;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,20 +43,20 @@ public class TransacaoService {
         log.info("Adicionando transação: valor={}, direcao={}", input.valor(), input.direcao());
         validarInput(input);
         Comprovante comprovante = resolverComprovante(input.comprovanteId());
-        return repository.adicionar(input, comprovante);
+        return repository.adicionar(input, comprovante, usuarioAutenticado());
     }
 
     @Transactional(readOnly = true)
     public Transacao buscarPorId(Long id) {
         log.debug("Buscando transação por id={}", id);
-        return repository.buscarPorId(id)
+        return repository.buscarPorId(id, usuarioAutenticado().getId())
                 .orElseThrow(() -> new TransacaoNaoEncontradaException(id));
     }
 
     @Transactional(readOnly = true)
     public List<Transacao> pesquisar(TransacaoFilterDTO filters) {
         validarPeriodo(filters.dataInicio(), filters.dataFim());
-        return repository.pesquisar(filters);
+        return repository.pesquisar(comUsuario(filters));
     }
 
     @Transactional
@@ -62,14 +64,14 @@ public class TransacaoService {
         log.info("Atualizando transação id={}", id);
         validarInput(input);
         Comprovante comprovante = resolverComprovante(input.comprovanteId());
-        return repository.atualizar(id, input, comprovante)
+        return repository.atualizar(id, input, comprovante, usuarioAutenticado().getId())
                 .orElseThrow(() -> new TransacaoNaoEncontradaException(id));
     }
 
     @Transactional
     public void deletar(Long id) {
         log.info("Deletando transação id={}", id);
-        if (!repository.deletar(id)) throw new TransacaoNaoEncontradaException(id);
+        if (!repository.deletar(id, usuarioAutenticado().getId())) throw new TransacaoNaoEncontradaException(id);
     }
 
     @Transactional(readOnly = true)
@@ -77,25 +79,34 @@ public class TransacaoService {
         if (page < 1) throw new IllegalArgumentException("O número da página deve ser maior que zero");
         if (size <= 0 || size > 100) throw new IllegalArgumentException("O tamanho da página deve ser entre 1 e 100");
         validarPeriodo(filters.dataInicio(), filters.dataFim());
-        return repository.pesquisarPaginado(filters, page, size);
+        return repository.pesquisarPaginado(comUsuario(filters), page, size);
     }
 
     @Transactional(readOnly = true)
     public BigDecimal buscarSaldo(TransacaoFilterDTO filters) {
         validarPeriodo(filters.dataInicio(), filters.dataFim());
-        return SaldoCalculator.calcular(repository.pesquisar(filters));
+        return SaldoCalculator.calcular(repository.pesquisar(comUsuario(filters)));
     }
 
     @Transactional(readOnly = true)
     public List<Transacao> buscarUltimasTransacoes(int limit) {
         if (limit <= 0) throw new IllegalArgumentException("O limite deve ser um número positivo");
-        return repository.buscarUltimasTransacoes(limit);
+        return repository.buscarUltimasTransacoes(limit, usuarioAutenticado().getId());
     }
 
     @Transactional(readOnly = true)
     public List<ResumoCategoriaDTO> resumoPorCategoria(TransacaoFilterDTO filters) {
         validarPeriodo(filters.dataInicio(), filters.dataFim());
-        return repository.resumoPorCategoria(filters);
+        return repository.resumoPorCategoria(comUsuario(filters));
+    }
+
+    private TransacaoFilterDTO comUsuario(TransacaoFilterDTO filters) {
+        Long uid = usuarioAutenticado().getId();
+        return new TransacaoFilterDTO(
+                filters.tipo(), filters.direcao(), filters.categoria(),
+                filters.semCategoria(), filters.descricao(),
+                filters.dataInicio(), filters.dataFim(), uid
+        );
     }
 
     private void validarInput(TransacaoInputDTO input) {
@@ -125,5 +136,9 @@ public class TransacaoService {
         if (dataInicio != null && dataFim != null && dataInicio.isAfter(dataFim)) {
             throw new IllegalArgumentException("Data de início não pode ser maior que a data fim");
         }
+    }
+
+    public Usuario usuarioAutenticado() {
+        return (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }
