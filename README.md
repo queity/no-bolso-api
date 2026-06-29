@@ -8,6 +8,7 @@ API de controle de finanças pessoais.
 - H2 in-memory (perfil `dev`)
 - Swagger UI (springdoc-openapi)
 - Docker
+- Railway (deploy em produção)
 
 ## Como executar
 
@@ -36,11 +37,24 @@ A API estará disponível em `http://localhost:8080`.
 
 > O backend e o frontend (`tech-challenge-mz`) compartilham a rede `nobolso-network`. Cada projeto cria a rede automaticamente se ela não existir, portanto não há ordem obrigatória para subir os projetos.
 
+## Perfis
+
+| Perfil | Descrição |
+|---|---|
+| `dev` | Usa repositórios mock em memória (H2). Não requer banco de dados. Ativado por padrão. |
+| `prod` | Requer banco de dados real e variáveis de ambiente configuradas. |
+
+O perfil é controlado pela variável `SPRING_PROFILES_ACTIVE`. No perfil `dev`, os dados são populados automaticamente com transações de exemplo ao iniciar a aplicação.
+
 ## Documentação
 
+**Local:**
 ```
-http://localhost:8080/api/swagger-ui.html
+http://localhost:8080/api/swagger-ui/index.html
 ```
+
+**Produção:**
+[Swagger UI](https://no-bolso-api-production.up.railway.app/api/swagger-ui/index.html)
 
 ## Variáveis de ambiente
 
